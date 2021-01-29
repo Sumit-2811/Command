@@ -1,0 +1,118 @@
+#!/bin/bash
+
+usr="user"
+crt="create"
+list="list"
+sudo="--sudo-only"
+vrsn="--version"
+cpu="cpu"
+info="getinfo"
+memory="memory"
+help="--help"
+file="file"
+size="--size"
+s="-s"
+pms="--permissions"
+p="-p"
+own="--owner"
+o="-o"
+mod="--last-modified"
+m="-m"
+
+#Help function for the --help option
+Help()
+{
+echo "internsctl [OPTIONS]... [FILE]..."
+echo "List cpu and memory information."
+echo "Used to add new user , list regular user and sudo users."
+echo "List properties of file like size,permissions,file owner and last"
+echo "modified" 
+echo "-s  To print size"
+echo "-o  owner of file"
+echo "-m  last modified"
+echo "cpu getinfo              cpu information"
+echo "memory getinfo           memory information" 
+echo "user create              to add user"
+echo "user list                list all regular users"
+echo "user list --sudo-only    list users having sudo permissions"
+}
+
+# Checking input for help
+if [[ $1 == "$help" ]]
+then
+Help
+fi
+
+# Checking input for version
+if [[ $1 == "$vrsn" ]]
+then
+echo "v0.1.0"
+fi  
+
+# Checking input for cpu information
+if [[ $1 == "$cpu" && $2 == "$info" ]]
+then
+lscpu
+fi
+
+# Checking input for memory information
+if [[ $1 == "$memory" && $2 == "$info" ]]
+then
+free
+fi 
+
+# Checking input for adding user
+if [[ $1 == "$usr" && $2 == "$crt" ]]
+then
+sudo adduser $3
+fi 
+
+# Checking input for listing all users
+if [[ $1 == "$usr" && $2 == "$list" && -z $3 ]] 
+then
+getent passwd
+fi
+
+# Checking input for listing only sudo users
+if [[ $1 == "$usr" && $2 == "$list" && $3 == "$sudo" ]]
+then
+getent group sudo | awk -F: '{print $4}'
+fi 
+
+# Checking input for display file content
+if [[ $1 == "$file" && $2 == "$info" && -z $4 ]]
+then
+acs="$(ls -nl $3 | awk '{print $5}')"   
+sz="$(ls -ld $3 | awk '{print $1}')"
+ownr="$(ls -ld $3 | awk '{print $3}')"
+mo="$(stat -c '%y' $3)"
+echo "File:    $3"
+echo "Access:  $acs"
+echo "Size(B): $sz"
+echo "Owner:   $ownr"
+echo "Modify:  $mo"
+fi
+
+# Checking input for file size
+if [[ $1 == "$file" && $2 == "$info" && $3 == "$size" || $3 == "$s" ]]
+then
+ls -nl $4 | awk '{print $5}'
+fi
+
+# Checking input for file permissions
+if [[ $1 == "$file" && $2 == "$info" && $3 == "$pms" || $3 == "$p" ]]
+then
+ls -ld $4 | awk '{print $1}'
+fi
+
+# Checking input for file owner
+if [[ $1 == "$file" && $2 == "$info" && $3 == "$own" || $3 == "$o" ]]
+then
+ls -ld $4 | awk '{print $3}'
+fi
+
+# Checking input for last modification
+if [[ $1 == "$file" && $2 == "$info" && $3 == "$mod" || $3 == "$m" ]]
+then
+stat -c '%y' $4
+fi
